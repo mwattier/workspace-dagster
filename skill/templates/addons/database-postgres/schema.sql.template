@@ -1,0 +1,14 @@
+-- Database schema for __MODULE_NAME__
+-- Optional: Define your database schema here
+
+-- Create schema (if using schema separation)
+-- CREATE SCHEMA IF NOT EXISTS __MODULE_NAME__;
+
+-- Example table
+-- CREATE TABLE IF NOT EXISTS your_table (
+--     id SERIAL PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
+
+-- Add your schema definitions here

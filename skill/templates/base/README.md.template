@@ -1,0 +1,124 @@
+# __MODULE_TITLE__
+
+__MODULE_DESCRIPTION__
+
+## Quick Start
+
+### Local Development
+
+1. **Integrate with workspace** (if not already done):
+   ```bash
+   @dagster-module-builder workspace add __MODULE_NAME__
+   ```
+
+2. **Start workspace Dagster**:
+   ```bash
+   cd ~/workspace/services/dagster
+   docker-compose up -d
+   ```
+
+3. **Open Dagster UI**:
+   ```
+   http://localhost:3000
+   ```
+
+4. **Materialize assets**:
+   - Navigate to Assets
+   - Find `__MODULE_NAME__/*` assets
+   - Click Materialize
+
+### Standalone Testing (Optional)
+
+```bash
+cd ~/workspace/projects/__MODULE_NAME__
+docker-compose up -d  # If database needed
+dagster dev -f src/__MODULE_NAME___dagster/__init__.py
+```
+
+## Project Structure
+
+```
+__MODULE_NAME__/
+├── src/
+│   └── __MODULE_NAME___dagster/
+│       ├── __init__.py          # Dagster definitions
+│       ├── assets.py            # Asset definitions
+│       └── resources.py         # Custom IO manager
+├── workspace/                   # Workspace integration
+│   └── local/
+├── deploy/                      # Deployment configs
+├── pyproject.toml
+├── requirements.txt
+└── README.md                    # This file
+```
+
+## Assets
+
+### `sample_asset`
+- **Description**: Sample asset demonstrating basic patterns
+- **Compute Kind**: python
+- **Outputs**: Dict with status and metadata
+
+## Configuration
+
+### Environment Variables
+
+See `.env.example` for all required variables:
+- Database connection (if applicable)
+- Module-specific settings
+
+### Workspace Integration
+
+This module integrates with `~/workspace/services/dagster/`:
+- Workspace entry in `workspace.yaml`
+- Environment variables in `.env`
+- Database service in `docker-compose.yml`
+
+## Deployment
+
+See `deploy/{deployment-name}/DEPLOYMENT.md` for deployment instructions specific to each environment.
+
+## Development
+
+### Adding New Assets
+
+1. Define asset in `src/__MODULE_NAME___dagster/assets.py`
+2. Import in `__init__.py`
+3. Add to Definitions
+4. Test locally
+
+### Testing
+
+```bash
+# Run tests
+pytest tests/
+
+# With coverage
+pytest tests/ --cov=src/__MODULE_NAME___dagster --cov-report=html
+```
+
+## Troubleshooting
+
+### Asset not appearing in UI
+- Check workspace.yaml has correct entry
+- Restart Dagster: `docker-compose restart dagster_webserver`
+
+### Database connection fails
+- Verify database container is running: `docker ps`
+- Check environment variables in .env
+
+### Storage errors
+- Custom IO manager uses `/tmp/dagster_storage/`
+- Verify volume mount in docker-compose.yml
+
+## Documentation
+
+- **SETUP.md** - Detailed setup instructions
+- **TROUBLESHOOTING.md** - Common issues and solutions
+- **deploy/{name}/DEPLOYMENT.md** - Deployment guides
+
+---
+
+**Status**: Development
+**Created**: $(date +%Y-%m-%d)
+**Last Updated**: $(date +%Y-%m-%d)

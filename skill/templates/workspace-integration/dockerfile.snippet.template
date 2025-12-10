@@ -1,0 +1,15 @@
+# System dependencies for __MODULE_NAME__
+# This gets added to ~/workspace/services/dagster/Dockerfile
+
+# System packages (if any)
+# RUN apt-get update && apt-get install -y \
+#     package-name \
+#     && rm -rf /var/lib/apt/lists/*
+
+# Python dependencies for __MODULE_NAME__
+RUN pip install --no-cache-dir \
+    # Add your module-specific Python packages here
+    # Example: pandas>=2.0.0
+
+# Update PYTHONPATH to include __MODULE_NAME__
+ENV PYTHONPATH="${PYTHONPATH}:/workspace/projects/__MODULE_NAME__/src"

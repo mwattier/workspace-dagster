@@ -1,0 +1,45 @@
+"""
+Schedules for __MODULE_TITLE__.
+
+Schedules trigger jobs at specific times.
+All schedules are STOPPED by default - enable in Dagster UI → Automation.
+"""
+
+from dagster import schedule, RunRequest, ScheduleEvaluationContext
+from .jobs import __MODULE_NAME___job
+
+
+@schedule(
+    cron_schedule="0 3 * * *",  # 3:00 AM daily
+    job=__MODULE_NAME___job,
+    execution_timezone="America/New_York",  # Adjust to your timezone
+)
+def daily___MODULE_NAME___schedule(context: ScheduleEvaluationContext):
+    """
+    Daily execution at 3:00 AM.
+    """
+    return RunRequest(
+        run_key=f"__MODULE_NAME___{context.scheduled_execution_time.strftime('%Y%m%d')}",
+        tags={
+            "scheduled": "daily",
+            "module": "__MODULE_NAME__",
+        }
+    )
+
+
+@schedule(
+    cron_schedule="0 3 * * 1",  # Monday at 3:00 AM
+    job=__MODULE_NAME___job,
+    execution_timezone="America/New_York",
+)
+def weekly___MODULE_NAME___schedule(context: ScheduleEvaluationContext):
+    """
+    Weekly execution on Monday at 3:00 AM.
+    """
+    return RunRequest(
+        run_key=f"__MODULE_NAME___weekly_{context.scheduled_execution_time.strftime('%Y%m%d')}",
+        tags={
+            "scheduled": "weekly",
+            "module": "__MODULE_NAME__",
+        }
+    )

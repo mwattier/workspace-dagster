@@ -1,0 +1,11 @@
+# Core Dagster dependencies
+dagster>=1.9.0
+dagster-webserver>=1.9.0
+
+# Environment and configuration
+python-dotenv>=1.0.0
+
+# Add your module-specific dependencies below
+# Example:
+# pandas>=2.0.0
+# requests>=2.31.0

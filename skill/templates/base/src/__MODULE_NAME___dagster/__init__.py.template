@@ -1,0 +1,22 @@
+"""
+__MODULE_TITLE__ Dagster Package
+
+__MODULE_DESCRIPTION__
+"""
+
+from dagster import Definitions
+
+from .assets import (
+    sample_asset,
+)
+from .resources import __MODULE_NAME___io_manager
+
+# Define all Dagster components
+defs = Definitions(
+    assets=[
+        sample_asset,
+    ],
+    resources={
+        "io_manager": __MODULE_NAME___io_manager,
+    },
+)

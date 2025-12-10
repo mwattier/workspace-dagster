@@ -1,0 +1,16 @@
+"""
+Jobs for __MODULE_TITLE__.
+
+Jobs define sets of assets to materialize together.
+"""
+
+from dagster import define_asset_job
+from .assets import sample_asset  # Import your assets
+
+
+# Define job to run all assets
+__MODULE_NAME___job = define_asset_job(
+    name="__MODULE_NAME___job",
+    selection=[sample_asset],  # List your assets here
+    description="Run all __MODULE_NAME__ assets",
+)

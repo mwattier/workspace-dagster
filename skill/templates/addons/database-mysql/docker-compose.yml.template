@@ -1,0 +1,26 @@
+# MySQL database for __MODULE_NAME__
+# For standalone local testing (optional)
+
+version: '3.8'
+
+services:
+  __MODULE_NAME___mysql:
+    image: mariadb:${MYSQL_VERSION:-10.11}
+    container_name: __MODULE_NAME___mysql_standalone
+    environment:
+      MYSQL_ROOT_PASSWORD: ${__MODULE_NAME_UPPER___DB_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${__MODULE_NAME_UPPER___DB_NAME:-__MODULE_NAME___db}
+      MYSQL_USER: ${__MODULE_NAME_UPPER___DB_USER:-__MODULE_NAME___user}
+      MYSQL_PASSWORD: ${__MODULE_NAME_UPPER___DB_PASSWORD:-__MODULE_NAME___password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "${__MODULE_NAME_UPPER___DB_PORT:-__DB_PORT__}:3306"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      timeout: 20s
+      retries: 10
+
+volumes:
+  mysql_data:

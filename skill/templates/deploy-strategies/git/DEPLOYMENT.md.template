@@ -1,0 +1,345 @@
+# Deployment Guide: __MODULE_NAME__ → __DEPLOY_NAME__ (Git Strategy)
+
+**Client:** __CLIENT_NAME__
+**Environment:** production
+**Strategy:** Git repository checkout
+**Last Updated:** $(date +%Y-%m-%d)
+
+---
+
+## Prerequisites
+
+- [ ] Git repository: __GIT_REPOSITORY__
+- [ ] SSH access to __REMOTE_HOST__ as __REMOTE_USER__
+- [ ] Module code committed to `main` branch
+- [ ] Remote server has git installed
+
+---
+
+## Initial Setup (First Deploy Only)
+
+### Step 1: Clone Repository on Remote Server
+
+```bash
+# SSH into production server
+ssh __REMOTE_USER__@__REMOTE_HOST__
+
+# Navigate to modules directory
+cd __REMOTE_BASE_PATH__/modules
+
+# Clone repository
+git clone __GIT_REPOSITORY__ __MODULE_NAME__
+
+# Verify
+cd __MODULE_NAME__
+git branch
+git log -1 --oneline
+```
+
+### Step 2: Update Remote Configuration Files
+
+#### 2.1 Update `.env`
+```bash
+ssh __REMOTE_USER__@__REMOTE_HOST__
+
+# Add these variables to __REMOTE_BASE_PATH__/.env
+cat >> __REMOTE_BASE_PATH__/.env << 'EOF'
+
+# __MODULE_TITLE__ Configuration
+__MODULE_NAME_UPPER___DB_HOST=__MODULE_NAME___postgres
+__MODULE_NAME_UPPER___DB_PORT=__DB_PORT__
+__MODULE_NAME_UPPER___DB_USER=__MODULE_NAME___user
+__MODULE_NAME_UPPER___DB_PASSWORD=<CHANGE_THIS_IN_PRODUCTION>
+__MODULE_NAME_UPPER___DB_NAME=__MODULE_NAME___db
+EOF
+```
+
+#### 2.2 Update `workspace.yaml`
+```bash
+# Add module entry
+cat >> __REMOTE_BASE_PATH__/workspace.yaml << 'EOF'
+
+# BEGIN: __MODULE_NAME__
+- python_package:
+    package_name: __MODULE_NAME___dagster
+    working_directory: /workspace/modules/__MODULE_NAME__/src
+# END: __MODULE_NAME__
+EOF
+```
+
+#### 2.3 Update `docker-compose.yml`
+Add database service for this module:
+
+```yaml
+services:
+  # ... existing services ...
+
+  # __MODULE_TITLE__ Database
+  __MODULE_NAME___postgres:
+    image: postgres:${POSTGRES_VERSION:-15}
+    container_name: __MODULE_NAME___postgres
+    environment:
+      POSTGRES_USER: ${__MODULE_NAME_UPPER___DB_USER}
+      POSTGRES_PASSWORD: ${__MODULE_NAME_UPPER___DB_PASSWORD}
+      POSTGRES_DB: ${__MODULE_NAME_UPPER___DB_NAME}
+    volumes:
+      - ${DATA_PATH}/postgres/__MODULE_NAME__:/var/lib/postgresql/data
+    ports:
+      - "${__MODULE_NAME_UPPER___DB_PORT}:5432"
+    networks:
+      - ${NETWORK_NAME}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${__MODULE_NAME_UPPER___DB_USER}"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Update dependencies
+  dagster_webserver:
+    depends_on:
+      # ... existing dependencies ...
+      __MODULE_NAME___postgres:
+        condition: service_healthy
+
+  dagster_daemon:
+    depends_on:
+      # ... existing dependencies ...
+      __MODULE_NAME___postgres:
+        condition: service_healthy
+```
+
+#### 2.4 Update `Dockerfile`
+Add module dependencies:
+
+```dockerfile
+# __MODULE_TITLE__ dependencies
+RUN pip install --no-cache-dir \
+    # Add module-specific packages
+
+ENV PYTHONPATH="${PYTHONPATH}:/workspace/modules/__MODULE_NAME__/src"
+```
+
+### Step 3: Build and Start Services
+
+```bash
+ssh __REMOTE_USER__@__REMOTE_HOST__
+
+cd __REMOTE_BASE_PATH__
+docker-compose build
+docker-compose up -d
+```
+
+### Step 4: Verify Initial Deployment
+
+```bash
+# Check logs
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'docker logs workspace_dagster_webserver --tail 50'
+
+# Check Dagster UI
+# Open http://__REMOTE_HOST__:3000
+# Navigate to Assets → Should see __MODULE_NAME__/* assets
+```
+
+---
+
+## Regular Deployment (After Initial Setup)
+
+### Step 1: Push Code to Repository
+
+```bash
+# On your local machine
+cd ~/workspace/projects/__MODULE_NAME__
+
+# Ensure you're on main branch
+git checkout main
+
+# Commit your changes
+git add src/
+git commit -m "feat: update __MODULE_NAME__"
+
+# Push to remote
+git push origin main
+```
+
+### Step 2: Deploy to Production
+
+**Option A: Manual Pull**
+```bash
+# SSH into production
+ssh __REMOTE_USER__@__REMOTE_HOST__
+
+# Pull latest changes
+cd __REMOTE_BASE_PATH__/modules/__MODULE_NAME__
+git pull origin main
+
+# Rebuild and restart
+cd __REMOTE_BASE_PATH__
+docker-compose build
+docker-compose up -d --no-deps dagster_webserver dagster_daemon
+```
+
+**Option B: One-Command Deploy** (Recommended)
+```bash
+# From your local machine
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  cd __REMOTE_BASE_PATH__/modules/__MODULE_NAME__ && \
+  git pull origin main && \
+  cd __REMOTE_BASE_PATH__ && \
+  docker-compose build && \
+  docker-compose up -d --no-deps dagster_webserver dagster_daemon'
+```
+
+### Step 3: Verify Deployment
+
+```bash
+# Check git status on remote
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  cd __REMOTE_BASE_PATH__/modules/__MODULE_NAME__ && \
+  git log -1 --oneline'
+
+# Check Dagster logs
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  docker logs workspace_dagster_webserver --tail 50 | grep __MODULE_NAME__'
+
+# Test in Dagster UI
+# http://__REMOTE_HOST__:3000
+```
+
+---
+
+## Rollback Procedure
+
+### Quick Rollback to Previous Commit
+
+```bash
+# SSH into production
+ssh __REMOTE_USER__@__REMOTE_HOST__
+
+# Navigate to module
+cd __REMOTE_BASE_PATH__/modules/__MODULE_NAME__
+
+# View recent commits
+git log --oneline -5
+
+# Rollback to previous commit
+git reset --hard HEAD~1
+
+# Or rollback to specific commit
+git reset --hard <commit-hash>
+
+# Restart services
+cd __REMOTE_BASE_PATH__
+docker-compose up -d --no-deps dagster_webserver dagster_daemon
+```
+
+### Verify Rollback
+
+```bash
+# Check current commit
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  cd __REMOTE_BASE_PATH__/modules/__MODULE_NAME__ && \
+  git log -1 --oneline'
+```
+
+---
+
+## Troubleshooting
+
+### Issue: Git pull fails with conflicts
+
+**Solution:**
+```bash
+ssh __REMOTE_USER__@__REMOTE_HOST__
+cd __REMOTE_BASE_PATH__/modules/__MODULE_NAME__
+
+# Stash local changes (if any)
+git stash
+
+# Pull latest
+git pull origin main
+
+# If conflicts persist, hard reset
+git fetch origin
+git reset --hard origin/main
+```
+
+### Issue: Module not appearing in Dagster UI
+
+**Checklist:**
+- [ ] Module entry in workspace.yaml?
+- [ ] PYTHONPATH includes module path in Dockerfile?
+- [ ] Dagster containers restarted after changes?
+- [ ] No errors in webserver logs?
+
+**Debug:**
+```bash
+# Check workspace.yaml
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'grep -A 3 "__MODULE_NAME__" __REMOTE_BASE_PATH__/workspace.yaml'
+
+# Check logs for errors
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'docker logs workspace_dagster_webserver 2>&1 | grep -i error'
+```
+
+### Issue: Database connection fails
+
+**Solution:**
+```bash
+# Check database container
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'docker ps | grep __MODULE_NAME___postgres'
+
+# Check database logs
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'docker logs __MODULE_NAME___postgres --tail 50'
+
+# Test connection
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  docker exec __MODULE_NAME___postgres psql \
+    -U __MODULE_NAME___user \
+    -d __MODULE_NAME___db \
+    -c "SELECT 1"'
+```
+
+---
+
+## Deployment Checklist
+
+**Initial Setup:**
+- [ ] Repository cloned on remote server
+- [ ] `.env` updated with module variables
+- [ ] `workspace.yaml` updated with module entry
+- [ ] `docker-compose.yml` updated with database service
+- [ ] `Dockerfile` updated with dependencies
+- [ ] Services built and started
+- [ ] Module visible in Dagster UI
+- [ ] Test asset materialization successful
+
+**Regular Deployment:**
+- [ ] Code committed and pushed to main
+- [ ] Remote pulled latest changes
+- [ ] Services rebuilt and restarted
+- [ ] Deployment verified in UI
+- [ ] No errors in logs
+
+---
+
+## Quick Reference Commands
+
+```bash
+# Deploy latest
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'cd __REMOTE_BASE_PATH__/modules/__MODULE_NAME__ && git pull && cd __REMOTE_BASE_PATH__ && docker-compose up -d --no-deps dagster_webserver dagster_daemon'
+
+# Check status
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'cd __REMOTE_BASE_PATH__/modules/__MODULE_NAME__ && git log -1 --oneline'
+
+# View logs
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'docker logs workspace_dagster_webserver --tail 100 | grep __MODULE_NAME__'
+
+# Rollback
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'cd __REMOTE_BASE_PATH__/modules/__MODULE_NAME__ && git reset --hard HEAD~1 && cd __REMOTE_BASE_PATH__ && docker-compose up -d --no-deps dagster_webserver dagster_daemon'
+```
+
+---
+
+**For questions or issues, refer to:**
+- Module README: `__REMOTE_BASE_PATH__/modules/__MODULE_NAME__/README.md`
+- Dagster docs: https://docs.dagster.io/
+- Project documentation: ~/workspace/projects/__MODULE_NAME__/docs/

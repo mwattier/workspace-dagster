@@ -1,0 +1,11 @@
+-- Database schema for __MODULE_NAME__
+-- Optional: Define your database schema here
+
+-- Example table
+-- CREATE TABLE IF NOT EXISTS your_table (
+--     id INT AUTO_INCREMENT PRIMARY KEY,
+--     name VARCHAR(255) NOT NULL,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Add your schema definitions here

@@ -1,0 +1,199 @@
+# Dagster Module .gitignore
+
+# ============================================
+# Environment Files (CRITICAL - Has Secrets)
+# ============================================
+.env
+.env.local
+.env.*.local
+
+# Allow example files (safe to commit)
+!.env.example
+!.env.*.example
+
+# Deployment environment files (has production passwords)
+deploy/*/.env.deploy
+deploy/**/.env.deploy
+
+# Allow deployment examples (safe to commit)
+!deploy/*/.env.deploy.example
+!deploy/**/.env.deploy.example
+
+# ============================================
+# Internal Documentation (Don't Commit)
+# ============================================
+PRODUCTION-IMPACT.md
+TEST-RESULTS.md
+CREATED.md
+*-ANALYSIS.md
+*-INTERNAL.md
+
+# Session notes and handoff files
+SESSION-*.md
+SESSION_*.md
+session-*.md
+session_*.md
+*session-notes*.md
+*session-handoff*.md
+*-NOTES-*.md
+HANDOFF*.md
+
+# Archived documentation
+docs/archive/
+
+# ============================================
+# Python
+# ============================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# ============================================
+# Dagster
+# ============================================
+# Dagster home directory (if local)
+dagster_home/
+
+# Dagster storage (temporary outputs)
+/tmp/dagster_storage/
+
+# Dagster logs
+*.log
+logs/
+
+# ============================================
+# Databases
+# ============================================
+# SQLite databases (if any)
+*.db
+*.sqlite
+*.sqlite3
+
+# Database dumps
+*.sql.gz
+*.dump
+
+# ============================================
+# Data Directories
+# ============================================
+data/
+output/
+temp/
+tmp/
+
+# ============================================
+# IDE / Editor
+# ============================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================
+# OS
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.directory
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ============================================
+# Docker
+# ============================================
+# Docker volumes (if local testing)
+docker-compose.override.yml
+
+# ============================================
+# Authentication / Credentials
+# ============================================
+# API keys and credentials
+*_api_key.txt
+*_credentials.json
+*.pem
+*.key
+id_rsa*
+*.p12
+
+# Auth directory (if it contains real credentials)
+auth/
+!auth/.gitkeep
+
+# ============================================
+# Backups
+# ============================================
+*.bak
+*.backup
+*.old
+*~
+
+# ============================================
+# Jupyter Notebooks (if any)
+# ============================================
+.ipynb_checkpoints/
+*.ipynb
+
+# ============================================
+# Node (if any JS/TS tooling)
+# ============================================
+node_modules/
+package-lock.json
+yarn.lock

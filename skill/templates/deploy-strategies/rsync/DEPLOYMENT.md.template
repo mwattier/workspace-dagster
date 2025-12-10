@@ -1,0 +1,413 @@
+# Deployment Guide: __MODULE_NAME__ → __DEPLOY_NAME__ (rsync Strategy)
+
+**Client:** __CLIENT_NAME__
+**Environment:** production
+**Strategy:** Direct file sync via rsync
+**Last Updated:** $(date +%Y-%m-%d)
+
+---
+
+## Prerequisites
+
+- [ ] SSH access to __REMOTE_HOST__ as __REMOTE_USER__
+- [ ] rsync installed locally
+- [ ] Module tested locally
+
+---
+
+## Initial Setup (First Deploy Only)
+
+### Step 1: Create Module Directory on Remote
+
+```bash
+# Create module directory
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'mkdir -p __REMOTE_BASE_PATH__/modules/__MODULE_NAME__/src'
+```
+
+### Step 2: Update Remote Configuration Files
+
+#### 2.1 Update `.env`
+```bash
+ssh __REMOTE_USER__@__REMOTE_HOST__
+
+# Add these variables to __REMOTE_BASE_PATH__/.env
+cat >> __REMOTE_BASE_PATH__/.env << 'EOF'
+
+# __MODULE_TITLE__ Configuration
+__MODULE_NAME_UPPER___DB_HOST=__MODULE_NAME___postgres
+__MODULE_NAME_UPPER___DB_PORT=__DB_PORT__
+__MODULE_NAME_UPPER___DB_USER=__MODULE_NAME___user
+__MODULE_NAME_UPPER___DB_PASSWORD=<CHANGE_THIS_IN_PRODUCTION>
+__MODULE_NAME_UPPER___DB_NAME=__MODULE_NAME___db
+EOF
+```
+
+#### 2.2 Update `workspace.yaml`
+```bash
+# Add module entry
+cat >> __REMOTE_BASE_PATH__/workspace.yaml << 'EOF'
+
+# BEGIN: __MODULE_NAME__
+- python_package:
+    package_name: __MODULE_NAME___dagster
+    working_directory: /workspace/modules/__MODULE_NAME__/src
+# END: __MODULE_NAME__
+EOF
+```
+
+#### 2.3 Update `docker-compose.yml`
+Add database service for this module:
+
+```yaml
+services:
+  # ... existing services ...
+
+  # __MODULE_TITLE__ Database
+  __MODULE_NAME___postgres:
+    image: postgres:${POSTGRES_VERSION:-15}
+    container_name: __MODULE_NAME___postgres
+    environment:
+      POSTGRES_USER: ${__MODULE_NAME_UPPER___DB_USER}
+      POSTGRES_PASSWORD: ${__MODULE_NAME_UPPER___DB_PASSWORD}
+      POSTGRES_DB: ${__MODULE_NAME_UPPER___DB_NAME}
+    volumes:
+      - ${DATA_PATH}/postgres/__MODULE_NAME__:/var/lib/postgresql/data
+    ports:
+      - "${__MODULE_NAME_UPPER___DB_PORT}:5432"
+    networks:
+      - ${NETWORK_NAME}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${__MODULE_NAME_UPPER___DB_USER}"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Update dependencies
+  dagster_webserver:
+    depends_on:
+      # ... existing dependencies ...
+      __MODULE_NAME___postgres:
+        condition: service_healthy
+
+  dagster_daemon:
+    depends_on:
+      # ... existing dependencies ...
+      __MODULE_NAME___postgres:
+        condition: service_healthy
+```
+
+#### 2.4 Update `Dockerfile`
+Add module dependencies:
+
+```dockerfile
+# __MODULE_TITLE__ dependencies
+RUN pip install --no-cache-dir \
+    # Add module-specific packages
+
+ENV PYTHONPATH="${PYTHONPATH}:/workspace/modules/__MODULE_NAME__/src"
+```
+
+### Step 3: Sync Module Files
+
+```bash
+# From your local machine
+cd ~/workspace/projects/__MODULE_NAME__
+
+# Initial sync
+rsync -av --delete \
+  --exclude='.venv' \
+  --exclude='__pycache__' \
+  --exclude='.git' \
+  --exclude='*.pyc' \
+  --exclude='.pytest_cache' \
+  --exclude='.coverage' \
+  --exclude='htmlcov' \
+  src/ \
+  __REMOTE_USER__@__REMOTE_HOST__:__REMOTE_BASE_PATH__/modules/__MODULE_NAME__/src/
+```
+
+### Step 4: Build and Start Services
+
+```bash
+ssh __REMOTE_USER__@__REMOTE_HOST__
+
+cd __REMOTE_BASE_PATH__
+docker-compose build
+docker-compose up -d
+```
+
+### Step 5: Verify Initial Deployment
+
+```bash
+# Check logs
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'docker logs workspace_dagster_webserver --tail 50'
+
+# Check Dagster UI
+# Open http://__REMOTE_HOST__:3000
+# Navigate to Assets → Should see __MODULE_NAME__/* assets
+```
+
+---
+
+## Regular Deployment (After Initial Setup)
+
+### Step 1: Test Locally
+
+```bash
+cd ~/workspace/projects/__MODULE_NAME__
+
+# Test your changes in local workspace
+cd ~/workspace/services/dagster
+docker-compose up -d
+# Test in http://localhost:3000
+```
+
+### Step 2: Backup Remote (Recommended)
+
+```bash
+# Create backup of current version
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  cd __REMOTE_BASE_PATH__/modules && \
+  tar -czf __MODULE_NAME___backup_$(date +%Y%m%d_%H%M%S).tar.gz __MODULE_NAME__/src/'
+```
+
+### Step 3: Sync Updated Files
+
+```bash
+# From your local machine
+cd ~/workspace/projects/__MODULE_NAME__
+
+# Sync changes
+rsync -av --delete \
+  --exclude='.venv' \
+  --exclude='__pycache__' \
+  --exclude='.git' \
+  --exclude='*.pyc' \
+  --exclude='.pytest_cache' \
+  --exclude='.coverage' \
+  --exclude='htmlcov' \
+  src/ \
+  __REMOTE_USER__@__REMOTE_HOST__:__REMOTE_BASE_PATH__/modules/__MODULE_NAME__/src/
+```
+
+### Step 4: Restart Services
+
+```bash
+# Rebuild and restart
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  cd __REMOTE_BASE_PATH__ && \
+  docker-compose build && \
+  docker-compose up -d --no-deps dagster_webserver dagster_daemon'
+```
+
+### Step 5: Verify Deployment
+
+```bash
+# Check logs
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  docker logs workspace_dagster_webserver --tail 50 | grep __MODULE_NAME__'
+
+# Test in Dagster UI
+# http://__REMOTE_HOST__:3000
+```
+
+---
+
+## One-Command Deployment
+
+Create a deployment script for convenience:
+
+```bash
+# ~/workspace/projects/__MODULE_NAME__/deploy-to-__DEPLOY_NAME__.sh
+#!/bin/bash
+
+set -e
+
+echo "Deploying __MODULE_NAME__ to __DEPLOY_NAME__..."
+
+# Sync files
+echo "→ Syncing files..."
+rsync -av --delete \
+  --exclude='.venv' \
+  --exclude='__pycache__' \
+  --exclude='.git' \
+  --exclude='*.pyc' \
+  --exclude='.pytest_cache' \
+  --exclude='.coverage' \
+  --exclude='htmlcov' \
+  src/ \
+  __REMOTE_USER__@__REMOTE_HOST__:__REMOTE_BASE_PATH__/modules/__MODULE_NAME__/src/
+
+# Restart services
+echo "→ Restarting Dagster services..."
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  cd __REMOTE_BASE_PATH__ && \
+  docker-compose build && \
+  docker-compose up -d --no-deps dagster_webserver dagster_daemon'
+
+echo "✓ Deployment complete!"
+echo "→ Check: http://__REMOTE_HOST__:3000"
+```
+
+Make it executable:
+```bash
+chmod +x deploy-to-__DEPLOY_NAME__.sh
+```
+
+Use it:
+```bash
+./deploy-to-__DEPLOY_NAME__.sh
+```
+
+---
+
+## Rollback Procedure
+
+### Restore from Backup
+
+```bash
+# List available backups
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'ls -lh __REMOTE_BASE_PATH__/modules/__MODULE_NAME___backup_*.tar.gz'
+
+# Choose backup to restore
+BACKUP_FILE="__MODULE_NAME___backup_20241210_143000.tar.gz"
+
+# Restore backup
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  cd __REMOTE_BASE_PATH__/modules && \
+  rm -rf __MODULE_NAME__/src && \
+  tar -xzf '${BACKUP_FILE}' && \
+  cd __REMOTE_BASE_PATH__ && \
+  docker-compose up -d --no-deps dagster_webserver dagster_daemon'
+```
+
+### Manual Rollback
+
+If no backup exists, rsync previous version from local:
+
+```bash
+# Checkout previous commit locally
+cd ~/workspace/projects/__MODULE_NAME__
+git log --oneline -5
+git checkout <previous-commit-hash>
+
+# Sync previous version
+rsync -av --delete \
+  --exclude='.venv' \
+  --exclude='__pycache__' \
+  src/ \
+  __REMOTE_USER__@__REMOTE_HOST__:__REMOTE_BASE_PATH__/modules/__MODULE_NAME__/src/
+
+# Restart services
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  cd __REMOTE_BASE_PATH__ && \
+  docker-compose up -d --no-deps dagster_webserver dagster_daemon'
+
+# Return to main branch locally
+git checkout main
+```
+
+---
+
+## Troubleshooting
+
+### Issue: rsync permission denied
+
+**Solution:**
+```bash
+# Check SSH connectivity
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'ls -la __REMOTE_BASE_PATH__/modules/'
+
+# Check directory permissions
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'ls -ld __REMOTE_BASE_PATH__/modules/__MODULE_NAME__/'
+
+# Fix permissions if needed
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'chmod -R 755 __REMOTE_BASE_PATH__/modules/__MODULE_NAME__/'
+```
+
+### Issue: Module not appearing in Dagster UI
+
+**Checklist:**
+- [ ] Files synced successfully?
+- [ ] Module entry in workspace.yaml?
+- [ ] PYTHONPATH includes module in Dockerfile?
+- [ ] Dagster containers restarted?
+- [ ] No errors in webserver logs?
+
+**Debug:**
+```bash
+# Verify files exist on remote
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'ls -la __REMOTE_BASE_PATH__/modules/__MODULE_NAME__/src/'
+
+# Check workspace.yaml
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'grep -A 3 "__MODULE_NAME__" __REMOTE_BASE_PATH__/workspace.yaml'
+
+# Check logs for errors
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'docker logs workspace_dagster_webserver 2>&1 | grep -i error'
+```
+
+### Issue: Files not updating after rsync
+
+**Solution:**
+```bash
+# Use --checksum flag to force comparison
+rsync -avc --delete \
+  --exclude='.venv' \
+  --exclude='__pycache__' \
+  src/ \
+  __REMOTE_USER__@__REMOTE_HOST__:__REMOTE_BASE_PATH__/modules/__MODULE_NAME__/src/
+
+# Hard restart of containers
+ssh __REMOTE_USER__@__REMOTE_HOST__ '\
+  cd __REMOTE_BASE_PATH__ && \
+  docker-compose down && \
+  docker-compose up -d'
+```
+
+---
+
+## Deployment Checklist
+
+**Initial Setup:**
+- [ ] Remote directory created
+- [ ] `.env` updated with module variables
+- [ ] `workspace.yaml` updated with module entry
+- [ ] `docker-compose.yml` updated with database service
+- [ ] `Dockerfile` updated with dependencies
+- [ ] Initial files synced
+- [ ] Services built and started
+- [ ] Module visible in Dagster UI
+- [ ] Test asset materialization successful
+
+**Regular Deployment:**
+- [ ] Tested locally
+- [ ] Backup created (optional but recommended)
+- [ ] Files synced successfully
+- [ ] Services restarted
+- [ ] Deployment verified in UI
+- [ ] No errors in logs
+
+---
+
+## Quick Reference Commands
+
+```bash
+# Deploy
+rsync -av --delete --exclude='.venv' --exclude='__pycache__' --exclude='.git' src/ __REMOTE_USER__@__REMOTE_HOST__:__REMOTE_BASE_PATH__/modules/__MODULE_NAME__/src/ && ssh __REMOTE_USER__@__REMOTE_HOST__ 'cd __REMOTE_BASE_PATH__ && docker-compose up -d --no-deps dagster_webserver dagster_daemon'
+
+# Create backup
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'cd __REMOTE_BASE_PATH__/modules && tar -czf __MODULE_NAME___backup_$(date +%Y%m%d_%H%M%S).tar.gz __MODULE_NAME__/src/'
+
+# View logs
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'docker logs workspace_dagster_webserver --tail 100 | grep __MODULE_NAME__'
+
+# Check synced files
+ssh __REMOTE_USER__@__REMOTE_HOST__ 'ls -la __REMOTE_BASE_PATH__/modules/__MODULE_NAME__/src/'
+```
+
+---
+
+**For questions or issues, refer to:**
+- Module README: `__REMOTE_BASE_PATH__/modules/__MODULE_NAME__/README.md`
+- Dagster docs: https://docs.dagster.io/
+- Project documentation: ~/workspace/projects/__MODULE_NAME__/docs/

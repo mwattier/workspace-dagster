@@ -1,0 +1,65 @@
+# Deployment configuration for __DEPLOY_NAME__
+# Strategy: Direct rsync file sync
+
+deployment:
+  name: __DEPLOY_NAME__
+  client: __CLIENT_NAME__
+  environment: production
+
+  # Deployment Strategy
+  strategy: rsync
+
+  # Remote Connection
+  remote:
+    host: __REMOTE_HOST__
+    user: __REMOTE_USER__
+    base_path: __REMOTE_BASE_PATH__
+    module_path: __REMOTE_BASE_PATH__/modules/__MODULE_NAME__
+
+  # rsync Strategy Configuration
+  rsync:
+    # Files/directories to exclude
+    exclude:
+      - .venv
+      - __pycache__
+      - .git
+      - "*.pyc"
+      - .pytest_cache
+      - .coverage
+      - htmlcov
+      - .ruff_cache
+
+    # rsync flags
+    flags: "-av --delete"
+
+    # Post-sync commands
+    post_sync: |
+      cd __REMOTE_BASE_PATH__
+      docker-compose build
+      docker-compose up -d --no-deps dagster_webserver dagster_daemon
+
+  # Module Configuration
+  module:
+    package_name: __MODULE_NAME___dagster
+    working_directory: /workspace/modules/__MODULE_NAME__/src
+
+  # Database Configuration
+  database:
+    type: __DB_TYPE__
+    host: __MODULE_NAME___postgres
+    port: __DB_PORT__
+    name: __MODULE_NAME___db
+    user: __MODULE_NAME___user
+
+  # Network Configuration
+  network:
+    name: __NETWORK_NAME__
+    external: true
+
+  # Remote Paths
+  paths:
+    workspace_yaml: __REMOTE_BASE_PATH__/workspace.yaml
+    dockerfile: __REMOTE_BASE_PATH__/Dockerfile
+    docker_compose: __REMOTE_BASE_PATH__/docker-compose.yml
+    data: __REMOTE_BASE_PATH__/data
+    auth: __REMOTE_BASE_PATH__/auth

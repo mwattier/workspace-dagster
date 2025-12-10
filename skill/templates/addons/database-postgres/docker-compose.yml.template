@@ -1,0 +1,26 @@
+# PostgreSQL database for __MODULE_NAME__
+# For standalone local testing (optional)
+
+version: '3.8'
+
+services:
+  __MODULE_NAME___postgres:
+    image: postgres:${POSTGRES_VERSION:-15}
+    container_name: __MODULE_NAME___postgres_standalone
+    environment:
+      POSTGRES_USER: ${__MODULE_NAME_UPPER___DB_USER:-__MODULE_NAME___user}
+      POSTGRES_PASSWORD: ${__MODULE_NAME_UPPER___DB_PASSWORD:-__MODULE_NAME___password}
+      POSTGRES_DB: ${__MODULE_NAME_UPPER___DB_NAME:-__MODULE_NAME___db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${__MODULE_NAME_UPPER___DB_PORT:-__DB_PORT__}:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${__MODULE_NAME_UPPER___DB_USER:-__MODULE_NAME___user}"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:

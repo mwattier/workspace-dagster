@@ -1,0 +1,6 @@
+# Workspace entry for __MODULE_NAME__
+# This gets appended to ~/workspace/services/dagster/workspace.yaml
+
+- python_package:
+    package_name: __MODULE_NAME___dagster
+    working_directory: /workspace/projects/__MODULE_NAME__/src
