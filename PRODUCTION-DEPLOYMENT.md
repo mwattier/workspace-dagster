@@ -34,7 +34,7 @@ This document covers production deployment in the abstract. Each module includes
 ├── modules/
 │   ├── seo-stats/          (git repo)
 │   ├── shopware-logs/      (git repo)
-│   └── beast-hubspot/      (git repo)
+│   └── crm-hubspot/      (git repo)
 ├── docker-compose.yml
 ├── Dockerfile
 ├── workspace.yaml
