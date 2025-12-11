@@ -2,6 +2,7 @@
 
 **Complete guide to setting up and using the Dagster workspace with standardized module pattern**
 
+
 ---
 
 ## 📚 Documentation Index
@@ -70,7 +71,6 @@ This Dagster workspace uses a **standardized module pattern** that provides:
 ├── projects/                   # Individual Dagster modules
 │   ├── seo-stats/              # Example: SEO statistics module
 │   ├── shopware-logs/          # Example: Shopware log processing
-│   ├── beast-hubspot/          # Example: HubSpot data sync
 │   └── dag-hello-world/        # Example: Test module
 │
 ├── patterns/dagster/           # Templates for creating new modules
@@ -153,7 +153,6 @@ docker compose restart dagster_webserver dagster_daemon
 |--------|-------------|----------|--------|
 | seo-stats | SEO statistics and analytics | PostgreSQL (5438) | ✅ Production |
 | shopware-logs | Shopware log processing via SSH | MySQL (3307) | ✅ Production |
-| beast-hubspot | HubSpot B2B customer data sync | PostgreSQL (shared) | ✅ Production |
 | dag-hello-world | Test/example module | PostgreSQL (5440) | ✅ Test only |
 
 ---
@@ -187,4 +186,4 @@ When creating new modules:
 ---
 
 **Last Updated**: 2025-12-10
-**Maintained By**: Development Team
+**Maintained By**: Mike Wattier <https://selltinfoil.com>
