@@ -26,8 +26,8 @@ defs = Definitions(
 ```
 
 Environment Variables:
-    YODA_METABASE_URL - Metabase instance URL
-    YODA_METABASE_API_KEY - Metabase API key
+    METABASE_URL - Metabase instance URL
+    METABASE_API_KEY - Metabase API key
 """
 
 import os
@@ -43,8 +43,8 @@ class MetabaseResource(ConfigurableResource):
     Resource for querying Metabase API.
 
     Configuration:
-        base_url: Metabase instance URL (from YODA_METABASE_URL)
-        api_key: Metabase API key (from YODA_METABASE_API_KEY)
+        base_url: Metabase instance URL (from METABASE_URL)
+        api_key: Metabase API key (from METABASE_API_KEY)
     """
 
     base_url: str
@@ -132,7 +132,7 @@ class MetabaseResource(ConfigurableResource):
                 metadata={
                     "base_url": self.base_url,
                     "error": str(e),
-                    "hint": "Check YODA_METABASE_URL and network connectivity"
+                    "hint": "Check METABASE_URL and network connectivity"
                 }
             )
         except ValueError as e:
@@ -201,8 +201,8 @@ def metabase_resource() -> MetabaseResource:
     Dagster resource for Metabase API access.
 
     Reads configuration from environment variables:
-        - YODA_METABASE_URL: Metabase instance URL
-        - YODA_METABASE_API_KEY: Metabase API key
+        - METABASE_URL: Metabase instance URL
+        - METABASE_API_KEY: Metabase API key
 
     Returns:
         Configured MetabaseResource instance
@@ -210,24 +210,24 @@ def metabase_resource() -> MetabaseResource:
     Raises:
         Failure: If required environment variables are missing
     """
-    base_url = os.environ.get("YODA_METABASE_URL")
-    api_key = os.environ.get("YODA_METABASE_API_KEY")
+    base_url = os.environ.get("METABASE_URL")
+    api_key = os.environ.get("METABASE_API_KEY")
 
     if not base_url:
         raise Failure(
-            description="Missing required environment variable: YODA_METABASE_URL",
+            description="Missing required environment variable: METABASE_URL",
             metadata={
-                "hint": "Set YODA_METABASE_URL to your Metabase instance URL",
-                "example": "YODA_METABASE_URL=https://meta.yodaforthewin.com"
+                "hint": "Set METABASE_URL to your Metabase instance URL",
+                "example": "METABASE_URL=https://metabase.example.com"
             }
         )
 
     if not api_key:
         raise Failure(
-            description="Missing required environment variable: YODA_METABASE_API_KEY",
+            description="Missing required environment variable: METABASE_API_KEY",
             metadata={
-                "hint": "Set YODA_METABASE_API_KEY to your Metabase API key",
-                "example": "YODA_METABASE_API_KEY=mb_xxx..."
+                "hint": "Set METABASE_API_KEY to your Metabase API key",
+                "example": "METABASE_API_KEY=mb_xxx..."
             }
         )
 
