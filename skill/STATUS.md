@@ -264,9 +264,7 @@ python3 lib/module_builder.py my-module --workspace
 
 **Documentation:**
 - `~/workspace/patterns/dagster/README.md`
-- `~/workspace/patterns/dagster/PHASE-1-COMPLETE.md`
-- `~/workspace/docs/proposals/dagster-module-builder-skill-PROPOSAL-v2.md`
-- `~/workspace/docs/proposals/dagster-module-builder-IMPLEMENTATION.md`
+- Main repository documentation (README.md, MODULE-PATTERN.md, etc.)
 
 **Total Files:** 24 files created
 **Total Lines:** ~8,000 lines of documentation and templates
