@@ -1,8 +1,6 @@
 # PostgreSQL database for __MODULE_NAME__
 # For standalone local testing (optional)
 
-version: '3.8'
-
 services:
   __MODULE_NAME___postgres:
     image: postgres:${POSTGRES_VERSION:-15}

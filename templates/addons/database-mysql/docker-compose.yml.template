@@ -1,8 +1,6 @@
 # MySQL database for __MODULE_NAME__
 # For standalone local testing (optional)
 
-version: '3.8'
-
 services:
   __MODULE_NAME___mysql:
     image: mariadb:${MYSQL_VERSION:-10.11}
