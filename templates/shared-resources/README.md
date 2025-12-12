@@ -20,8 +20,8 @@ Provides centralized access to Metabase API for querying saved cards/questions.
 
 **Environment Variables**:
 ```bash
-YODA_METABASE_URL=https://meta.yodaforthewin.com
-YODA_METABASE_API_KEY=mb_xxx...
+METABASE_URL=https://metabase.example.com
+METABASE_API_KEY=mb_xxx...
 ```
 
 **Usage in Your Module**:
@@ -31,7 +31,8 @@ YODA_METABASE_API_KEY=mb_xxx...
 import os
 from dagster import asset, AssetExecutionContext
 import sys
-sys.path.append('/home/mike/workspace')
+from pathlib import Path
+sys.path.append(str(Path.home() / 'workspace'))
 from patterns.dagster.shared_resources.metabase_resource import metabase_resource
 
 @asset(required_resource_keys={"metabase"})
@@ -54,7 +55,8 @@ def my_data_from_metabase(context: AssetExecutionContext):
 from dagster import Definitions
 from .assets import my_data_from_metabase
 import sys
-sys.path.append('/home/mike/workspace')
+from pathlib import Path
+sys.path.append(str(Path.home() / 'workspace'))
 from patterns.dagster.shared_resources.metabase_resource import metabase_resource
 
 defs = Definitions(
@@ -71,12 +73,12 @@ Each module should define its own card IDs in environment variables with a modul
 
 ```bash
 # In your module's .env
-# beast-address-matching
-BEAST_ADDRESS_MATCHING_SHOPWARE_CARD_ID=593
+# Example: customer-analytics module
+CUSTOMER_ANALYTICS_ORDERS_CARD_ID=123
 
-# beast-analytics
-BEAST_ANALYTICS_ORDERS_CARD_ID=XXX
-BEAST_ANALYTICS_SALES_CARD_ID=XXX
+# Example: sales-pipeline module
+SALES_PIPELINE_DEALS_CARD_ID=456
+SALES_PIPELINE_REVENUE_CARD_ID=789
 ```
 
 This allows multiple modules to share the same Metabase credentials while querying different cards.
@@ -89,12 +91,12 @@ This allows multiple modules to share the same Metabase credentials while queryi
 
 **Before** (credentials per module):
 ```bash
-# beast-address-matching/.env
-METABASE_URL=https://meta.yodaforthewin.com
+# customer-analytics/.env
+METABASE_URL=https://metabase.example.com
 METABASE_API_KEY=mb_xxx...
 
-# beast-analytics/.env
-METABASE_URL=https://meta.yodaforthewin.com
+# sales-pipeline/.env
+METABASE_URL=https://metabase.example.com
 METABASE_API_KEY=mb_xxx...
 ```
 ❌ Duplicated credentials
@@ -104,14 +106,14 @@ METABASE_API_KEY=mb_xxx...
 **After** (shared resource):
 ```bash
 # workspace .env (shared)
-YODA_METABASE_URL=https://meta.yodaforthewin.com
-YODA_METABASE_API_KEY=mb_xxx...
+METABASE_URL=https://metabase.example.com
+METABASE_API_KEY=mb_xxx...
 
-# beast-address-matching/.env (module-specific)
-BEAST_ADDRESS_MATCHING_SHOPWARE_CARD_ID=593
+# customer-analytics/.env (module-specific)
+CUSTOMER_ANALYTICS_ORDERS_CARD_ID=123
 
-# beast-analytics/.env (module-specific)
-BEAST_ANALYTICS_ORDERS_CARD_ID=XXX
+# sales-pipeline/.env (module-specific)
+SALES_PIPELINE_DEALS_CARD_ID=456
 ```
 ✅ Single source of truth for credentials
 ✅ Update in one place
@@ -189,7 +191,7 @@ from .resources.metabase_resource import metabase_resource
 - Keep imports as-is
 
 **Option 3: Package as library** (Future, if many modules)
-- Create `dagster-beast-resources` Python package
+- Create `dagster-shared-resources` Python package
 - Install in all modules
 - Import from package
 
@@ -222,6 +224,6 @@ Keep this README updated when:
 
 ## Related Documentation
 
-- **DATABASE-ACCESS.md**: `~/workspace/docs/beast/DATABASE-ACCESS.md`
-- **Metabase API Test**: `~/workspace/docs/beast/beast-address-matching/test-metabase-api.py`
-- **Deployment Guide**: `~/workspace/docs/dagster/PRODUCTION_DEPLOYMENT_GUIDE.md`
+- **Module Pattern Guide**: See main documentation in this repository
+- **Templates**: `~/workspace/patterns/dagster/`
+- **Deployment Guide**: See PRODUCTION-DEPLOYMENT.md in this repository
