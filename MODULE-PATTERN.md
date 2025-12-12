@@ -516,22 +516,25 @@ Every module includes:
 
 ---
 
-## 📊 Example Modules
+## 📊 Example Module Types
 
-### seo-stats (PostgreSQL)
-- Fetches Google Analytics 4 data
-- Stores in PostgreSQL database
+### Analytics Pipeline (PostgreSQL)
+- Fetches data from analytics APIs
+- Stores aggregated metrics in PostgreSQL
 - Scheduled daily updates
+- Use case: Website analytics, marketing metrics
 
-### shopware-logs (MySQL)
-- Fetches logs via SSH from remote server
-- Stores in MySQL database
-- On-demand processing
+### Log Processing (MySQL)
+- Fetches logs from remote servers or APIs
+- Processes and stores in MySQL database
+- On-demand or scheduled processing
+- Use case: Application logs, audit trails
 
-### beast-hubspot (Shared PostgreSQL)
-- Syncs HubSpot data via dlt framework
-- Uses shared customer_data database
-- Scheduled hourly updates
+### CRM Data Sync (PostgreSQL)
+- Syncs data from CRM platforms
+- Stores customer data in PostgreSQL
+- Scheduled hourly or real-time updates
+- Use case: Customer data, sales pipelines
 
 ---
 

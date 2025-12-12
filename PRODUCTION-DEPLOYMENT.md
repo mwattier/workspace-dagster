@@ -32,9 +32,9 @@ This document covers production deployment in the abstract. Each module includes
 ```
 /home/deploy/dagster/
 ├── modules/
-│   ├── seo-stats/          (git repo)
-│   ├── shopware-logs/      (git repo)
-│   └── crm-hubspot/      (git repo)
+│   ├── my-data-pipeline/    (git repo)
+│   ├── customer-analytics/  (git repo)
+│   └── crm-sync/            (git repo)
 ├── docker-compose.yml
 ├── Dockerfile
 ├── workspace.yaml

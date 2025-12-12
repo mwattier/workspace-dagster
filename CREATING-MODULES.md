@@ -541,13 +541,14 @@ When ready:
 
 ---
 
-## 📚 Examples
+## 📚 Templates & Examples
 
-See existing modules for reference:
-- `~/workspace/projects/seo-stats/` - PostgreSQL, GA4 API
-- `~/workspace/projects/shopware-logs/` - MySQL, SSH fetching
-- `~/workspace/projects/beast-hubspot/` - Shared DB, dlt framework
-- `~/workspace/projects/dag-hello-world/` - Simple test module
+See the templates in this repository:
+- `templates/base/` - Core module structure
+- `templates/addons/database-postgres/` - PostgreSQL integration
+- `templates/addons/database-mysql/` - MySQL integration
+- `templates/workspace-integration/` - Local workspace setup
+- See [MODULE-PATTERN.md](MODULE-PATTERN.md) for pattern details
 
 ---
 

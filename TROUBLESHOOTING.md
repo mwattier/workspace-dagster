@@ -670,15 +670,14 @@ Before asking for help, collect this information:
    uname -a
    ```
 
-### Check Existing Modules
+### Check Module Templates
 
-Look at working examples:
-- `~/workspace/projects/seo-stats/`
-- `~/workspace/projects/shopware-logs/`
-- `~/workspace/projects/beast-hubspot/`
-- `~/workspace/projects/dag-hello-world/`
+Look at the standardized templates:
+- `~/workspace/patterns/dagster/base/` - Core module structure
+- `~/workspace/patterns/dagster/addons/` - Database integrations
+- See [MODULE-PATTERN.md](MODULE-PATTERN.md) for detailed structure
 
-Compare your module structure to these.
+Compare your module structure to these templates.
 
 ---
 

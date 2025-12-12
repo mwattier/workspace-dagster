@@ -73,9 +73,9 @@ This Dagster workspace uses a **standardized module pattern** that provides:
 │   └── .env                    # Environment variables
 │
 ├── projects/                   # Individual Dagster modules
-│   ├── seo-stats/              # Example: SEO statistics module
-│   ├── shopware-logs/          # Example: Shopware log processing
-│   └── dag-hello-world/        # Example: Test module
+│   ├── my-data-pipeline/       # Example: Your data pipeline
+│   ├── customer-analytics/     # Example: Analytics module
+│   └── hello-dagster/          # Example: Test module
 │
 ├── patterns/dagster/           # Templates for creating new modules
 │   ├── base/                   # Core module files
@@ -148,16 +148,6 @@ docker logs workspace_dagster_webserver --tail 50
 cd ~/workspace/services/dagster
 docker compose restart dagster_webserver dagster_daemon
 ```
-
----
-
-## 📊 Current Modules
-
-| Module | Description | Database | Status |
-|--------|-------------|----------|--------|
-| seo-stats | SEO statistics and analytics | PostgreSQL (5438) | ✅ Production |
-| shopware-logs | Shopware log processing via SSH | MySQL (3307) | ✅ Production |
-| dag-hello-world | Test/example module | PostgreSQL (5440) | ✅ Test only |
 
 ---
 

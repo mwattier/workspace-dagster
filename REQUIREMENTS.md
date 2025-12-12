@@ -54,7 +54,7 @@ git --version
 ---
 
 ### 3. SSH Client
-**Required for modules that fetch remote data (e.g., shopware-logs)**
+**Required if your modules need to fetch data from remote servers**
 
 - OpenSSH client
 
@@ -147,14 +147,10 @@ The following ports must be available on your local machine:
 - `5437` - Dagster metadata PostgreSQL
 
 **Module Databases:**
-- `5438` - seo-stats PostgreSQL
-- `5439` - customer_data PostgreSQL (shared by beast-hubspot)
-- `5440` - dag-hello-world PostgreSQL
-- `3307` - shopware-logs MySQL
+- `5440+` - PostgreSQL databases (auto-assigned starting at 5440)
+- `3307+` - MySQL databases (auto-assigned starting at 3307)
 
-**Future Modules:**
-- `5441+` - Additional PostgreSQL databases
-- `3308+` - Additional MySQL databases
+**Note:** The skill automatically detects and assigns available ports when creating new modules.
 
 ---
 
@@ -181,21 +177,13 @@ The following ports must be available on your local machine:
 
 ## 🔐 Credentials & Access
 
-### Required Access
+Dagster modules typically need credentials to access external services. Store these securely:
 
-Depending on which modules you're working with:
+- **API Keys/Tokens**: Store in `.env` files (never commit these!)
+- **SSH Keys**: Store in `~/workspace/auth/` with proper permissions (`chmod 600`)
+- **Service Account Files**: Store in `~/workspace/auth/` with restricted access
 
-**For seo-stats:**
-- Google Analytics 4 property access
-- Google Cloud credentials for GA4 API
-
-**For shopware-logs:**
-- SSH access to Shopware remote server
-- SSH key for authentication
-
-**For beast-hubspot:**
-- HubSpot Private App access token
-- HubSpot account with appropriate permissions
+Each module you create will document its specific credential requirements in its README.
 
 ---
 

@@ -12,7 +12,7 @@
 
 **Deliverables:**
 - 20 template files across 15 directories
-- Base module templates (proven from beast-hubspot)
+- Base module templates (proven from production modules)
 - Workspace integration templates
 - Deployment strategy templates (git, rsync)
 - Database addons (PostgreSQL, MySQL)
