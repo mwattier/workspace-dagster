@@ -2,7 +2,7 @@
 
 **Complete guide to setting up and using the Dagster workspace with standardized module pattern**
 
-> **🎉 NEW**: [Claude Code Skill Available!](skill/INSTALL.md) - Automatically create Dagster modules by asking Claude in natural language
+> [Claude Code Skill Available!](skill/INSTALL.md) - Automatically create Dagster modules by asking Claude in natural language
 
 ---
 

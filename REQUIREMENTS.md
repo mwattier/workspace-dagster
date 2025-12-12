@@ -118,7 +118,7 @@ claude --version
 # claude-code x.x.x
 ```
 
-**Note:** Claude Code skill is located in `~/workspace/docs/dagster-workspace/skill/`
+**Note:** After cloning this repository, install the Claude Code skill from the `skill/` directory. See [skill/INSTALL.md](skill/INSTALL.md) for installation instructions.
 
 ---
 
@@ -207,13 +207,12 @@ You'll need a workspace directory structure:
 ~/workspace/
 ├── services/dagster/     # Will be set up during SETUP.md
 ├── projects/             # Your Dagster modules
-├── patterns/dagster/     # Templates (optional for creation)
+├── patterns/dagster/     # Templates (copied from this repo's templates/ directory)
 ├── data/                 # Database volumes (created automatically)
-├── auth/                 # Credentials (you provide)
-└── docs/                 # This documentation
+└── auth/                 # Credentials (you provide)
 ```
 
-**Note:** Most directories will be created during setup. You only need to ensure `~/workspace/` exists.
+**Note:** Most directories will be created during setup. You only need to ensure `~/workspace/` exists. This documentation repository can be cloned anywhere - it doesn't need to be in `~/workspace/`.
 
 ---
 

@@ -196,7 +196,7 @@ When updating templates:
 To get template updates:
 
 ```bash
-cd ~/workspace/docs/dagster-workspace
+cd /path/to/dagster-workspace
 git pull
 
 # Re-copy templates
@@ -223,12 +223,12 @@ vim ~/workspace/patterns/dagster/base/README.md.template
 
 ### Sharing with Team
 ```bash
-# Copy your custom templates back to repo
+# Copy your custom templates back to repo (from repo root)
 cp ~/workspace/patterns/dagster/base/README.md.template \
-   ~/workspace/docs/dagster-workspace/templates/base/
+   templates/base/
 
 # Commit and push
-cd ~/workspace/docs/dagster-workspace
+cd /path/to/dagster-workspace
 git add templates/
 git commit -m "Add custom README template"
 git push
@@ -276,8 +276,8 @@ git push
 # Verify path
 ls ~/workspace/patterns/dagster/
 
-# If missing, reinstall
-cd ~/workspace/docs/dagster-workspace
+# If missing, reinstall (from repository root)
+cd /path/to/dagster-workspace
 cp -r templates ~/workspace/patterns/dagster
 ```
 
@@ -293,8 +293,9 @@ cp -r templates ~/workspace/patterns/dagster
 
 **Fix**:
 ```bash
-# Clear and reinstall templates
+# Clear and reinstall templates (from repository root)
 rm -rf ~/workspace/patterns/dagster
+cd /path/to/dagster-workspace
 cp -r templates ~/workspace/patterns/dagster
 ```
 
@@ -311,7 +312,8 @@ Create a new Dagster module for customer analytics
 
 **Or use CLI directly:**
 ```bash
-cd ~/workspace/docs/dagster-workspace/skill
+# From the repository's skill directory
+cd /path/to/dagster-workspace/skill
 python3 lib/module_builder.py my-module --workspace
 ```
 

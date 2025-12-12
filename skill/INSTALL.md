@@ -16,19 +16,22 @@ This guide explains how to install the dagster-module-builder skill for Claude C
 
 ### Step 1: Clone or Pull the Repository
 
-If you haven't already, clone the dagster-workspace repo:
+Clone this repository to your preferred location:
 
 ```bash
-cd ~/workspace/docs
-git clone <repository-url> dagster-workspace
+# Clone to any location you prefer
+git clone <repository-url> /path/to/dagster-workspace
+cd /path/to/dagster-workspace
 ```
 
 Or if you already have it, pull the latest changes:
 
 ```bash
-cd ~/workspace/docs/dagster-workspace
+cd /path/to/dagster-workspace
 git pull
 ```
+
+**Note:** Replace `/path/to/dagster-workspace` with your actual clone location.
 
 ### Step 2: Create Skills Directory
 
@@ -43,7 +46,13 @@ mkdir -p ~/.claude/skills
 Create a symlink from your Claude skills directory to the skill in the repo:
 
 ```bash
-ln -sf ~/workspace/docs/dagster-workspace/skill ~/.claude/skills/dagster-module-builder
+# From the repository root directory
+ln -sf $(pwd)/skill ~/.claude/skills/dagster-module-builder
+```
+
+Alternatively, with an absolute path:
+```bash
+ln -sf /path/to/dagster-workspace/skill ~/.claude/skills/dagster-module-builder
 ```
 
 ### Step 4: Verify Installation
@@ -54,9 +63,9 @@ Check that the symlink was created:
 ls -la ~/.claude/skills/ | grep dagster
 ```
 
-You should see:
+You should see something like:
 ```
-dagster-module-builder -> /home/your-username/workspace/docs/dagster-workspace/skill
+dagster-module-builder -> /path/to/dagster-workspace/skill
 ```
 
 ### Step 5: Verify Skill File
@@ -92,8 +101,8 @@ Claude should automatically activate the skill and ask you questions about datab
 If you prefer to copy the skill instead of symlinking (useful if you want to modify it):
 
 ```bash
-# Copy the skill directory
-cp -r ~/workspace/docs/dagster-workspace/skill ~/.claude/skills/dagster-module-builder
+# Copy the skill directory (from the repository root)
+cp -r skill ~/.claude/skills/dagster-module-builder
 
 # Note: Updates from git won't automatically apply
 # You'll need to manually copy again when the skill is updated
@@ -149,8 +158,8 @@ If the symlink points to the wrong location:
 # Remove old symlink
 rm ~/.claude/skills/dagster-module-builder
 
-# Create new symlink with correct path
-ln -sf ~/workspace/docs/dagster-workspace/skill ~/.claude/skills/dagster-module-builder
+# Create new symlink with correct path (from repository root)
+ln -sf $(pwd)/skill ~/.claude/skills/dagster-module-builder
 ```
 
 ---
@@ -162,7 +171,7 @@ When the skill is updated in the repository:
 ### If Using Symlink (Recommended)
 
 ```bash
-cd ~/workspace/docs/dagster-workspace
+cd /path/to/dagster-workspace
 git pull
 # Changes are immediately available (restart Claude session)
 ```
@@ -170,12 +179,12 @@ git pull
 ### If Using Copy
 
 ```bash
-cd ~/workspace/docs/dagster-workspace
+cd /path/to/dagster-workspace
 git pull
 
 # Re-copy the skill
 rm -rf ~/.claude/skills/dagster-module-builder
-cp -r ~/workspace/docs/dagster-workspace/skill ~/.claude/skills/dagster-module-builder
+cp -r skill ~/.claude/skills/dagster-module-builder
 ```
 
 ---
@@ -199,9 +208,9 @@ After installation, your structure should look like:
 
 ```
 ~/.claude/skills/
-└── dagster-module-builder -> ~/workspace/docs/dagster-workspace/skill/
+└── dagster-module-builder -> /path/to/dagster-workspace/skill/
 
-~/workspace/docs/dagster-workspace/skill/
+/path/to/dagster-workspace/skill/
 ├── SKILL.md                   # Skill definition (YAML + docs)
 ├── USAGE.md                   # How to use the skill
 ├── INSTALL.md                 # This file
@@ -223,22 +232,25 @@ After installation, your structure should look like:
 
 For consistent team setup, everyone should:
 
-1. Clone the dagster-workspace repo
+1. Clone the dagster-workspace repo to their preferred location
 2. Symlink the skill (so updates propagate automatically)
-3. Ensure templates exist at `~/workspace/patterns/dagster/`
-4. Use the same directory structure
+3. Install templates to `~/workspace/patterns/dagster/`
+4. Use the same patterns directory location
 
 **Recommended team workflow:**
 
 ```bash
-# One-time setup
-cd ~/workspace/docs
-git clone <repo-url> dagster-workspace
+# One-time setup (clone to any location)
+git clone <repo-url> /path/to/dagster-workspace
+cd /path/to/dagster-workspace
 mkdir -p ~/.claude/skills
-ln -sf ~/workspace/docs/dagster-workspace/skill ~/.claude/skills/dagster-module-builder
+ln -sf $(pwd)/skill ~/.claude/skills/dagster-module-builder
+
+# Install templates
+cp -r templates ~/workspace/patterns/dagster
 
 # Regular updates
-cd ~/workspace/docs/dagster-workspace
+cd /path/to/dagster-workspace
 git pull
 # Restart Claude session to pick up changes
 ```

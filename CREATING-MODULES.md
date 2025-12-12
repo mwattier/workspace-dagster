@@ -19,13 +19,17 @@ Both produce the same standardized result.
 ### Prerequisites
 
 - Claude Code installed ([setup guide](https://github.com/anthropics/claude-code))
-- Skill files in `~/workspace/docs/dagster-workspace/skill/`
+- This repository cloned locally
+- Templates installed (see [templates/README.md](templates/README.md))
 
 ### Installation
 
+See [skill/INSTALL.md](skill/INSTALL.md) for complete installation instructions.
+
+**Quick install:**
 ```bash
-# Copy skill to Claude Code skills directory
-cp -r ~/workspace/docs/dagster-workspace/skill ~/.claude/skills/dagster-module-builder
+# From this repository's root directory
+ln -sf $(pwd)/skill ~/.claude/skills/dagster-module-builder
 
 # Verify installation
 claude skills list | grep dagster-module-builder
@@ -292,11 +296,16 @@ ${MODULE_NAME.upper()}_DB_NAME=${MODULE_NAME}_db
 #### 3.4 Create `.gitignore`
 
 ```bash
-# Copy the comprehensive template
-cp ~/workspace/docs/dagster-workspace/skill/.gitignore.template .gitignore
+# Copy from the templates directory in this repository
+cp path/to/this-repo/templates/base/.gitignore.template .gitignore
 ```
 
-Or see the comprehensive `.gitignore` in the skill files.
+Or create manually with at minimum:
+```
+.env
+__pycache__/
+*.pyc
+```
 
 ---
 
