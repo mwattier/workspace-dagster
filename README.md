@@ -2,6 +2,7 @@
 
 **Complete guide to setting up and using the Dagster workspace with standardized module pattern**
 
+> **🎉 NEW**: [Claude Code Skill Available!](skill/INSTALL.md) - Automatically create Dagster modules by asking Claude in natural language
 
 ---
 
@@ -19,8 +20,11 @@
 5. **[PRODUCTION-DEPLOYMENT.md](PRODUCTION-DEPLOYMENT.md)** - Production deployment concepts
 6. **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
 
-### Tools
-7. **[skill/](skill/)** - Claude Code skill for automated module creation
+### Tools & Automation
+7. **[skill/INSTALL.md](skill/INSTALL.md)** - 🎯 Install Claude Code skill for automated module creation
+8. **[skill/USAGE.md](skill/USAGE.md)** - How to use the Claude Code skill
+9. **[skill/STATUS.md](skill/STATUS.md)** - Implementation status and capabilities
+10. **[templates/README.md](templates/README.md)** - 📦 Module templates (required for skill)
 
 ---
 

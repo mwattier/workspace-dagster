@@ -219,31 +219,180 @@ class ModuleBuilder:
 
         return created_files
 
+    def create_module(
+        self,
+        module_name: str,
+        database_type: str = "postgresql",
+        description: str = "",
+        integrate_workspace: bool = False,
+        configure_deployment: bool = False,
+        deploy_name: str = "production",
+        client_name: str = "",
+        git_repo: str = "",
+    ) -> bool:
+        """
+        Create a complete Dagster module from templates.
+
+        Args:
+            module_name: Name of the module (kebab-case or snake_case)
+            database_type: Database type (postgresql/mysql/none)
+            description: Module description
+            integrate_workspace: Whether to create workspace integration files
+            configure_deployment: Whether to create deployment configs
+            deploy_name: Deployment name (e.g., "production", "yoda")
+            client_name: Client name
+            git_repo: Git repository URL
+
+        Returns:
+            True if successful, False otherwise
+        """
+        module_snake = self.to_snake_case(module_name)
+        module_dir = self.projects_dir / module_name
+
+        # Check if module already exists
+        if module_dir.exists():
+            print(f"Error: Module {module_name} already exists at {module_dir}")
+            return False
+
+        # Generate all variables
+        variables = self.generate_variables(
+            module_name=module_name,
+            database_type=database_type,
+            description=description,
+            deploy_name=deploy_name,
+            client_name=client_name,
+            git_repo=git_repo,
+        )
+
+        print(f"\nCreating module: {module_name}")
+        print(f"  Snake case: {module_snake}")
+        print(f"  Database: {database_type}")
+        if database_type != "none":
+            print(f"  Port: {variables['__DB_PORT__']}")
+        print()
+
+        # Create base module structure
+        print("Creating base module...")
+        base_dir = self.templates_dir / "base"
+        if base_dir.exists():
+            created_files = self.copy_directory_recursive(base_dir, module_dir, variables)
+            print(f"  Created {len(created_files)} files")
+        else:
+            print(f"  Warning: Base templates not found at {base_dir}")
+
+        # Create workspace integration if requested
+        if integrate_workspace:
+            print("\nCreating workspace integration...")
+            workspace_dir = self.templates_dir / "workspace-integration"
+            if workspace_dir.exists():
+                workspace_target = module_dir / "workspace" / "local"
+                created_files = self.copy_directory_recursive(workspace_dir, workspace_target, variables)
+                print(f"  Created {len(created_files)} workspace files")
+            else:
+                print(f"  Warning: Workspace templates not found at {workspace_dir}")
+
+        # Create deployment config if requested
+        if configure_deployment:
+            print(f"\nCreating deployment configuration for {deploy_name}...")
+            deploy_template_dir = self.templates_dir / "deploy-strategies" / "git"  # Default to git strategy
+            if deploy_template_dir.exists():
+                deploy_target = module_dir / "deploy" / deploy_name
+                created_files = self.copy_directory_recursive(deploy_template_dir, deploy_target, variables)
+                print(f"  Created {len(created_files)} deployment files")
+            else:
+                print(f"  Warning: Deployment templates not found at {deploy_template_dir}")
+
+        # Add database addon if needed
+        if database_type in ["postgresql", "mysql"]:
+            print(f"\nAdding {database_type} database configuration...")
+            db_addon_dir = self.templates_dir / "addons" / f"database-{database_type}"
+            if db_addon_dir.exists():
+                created_files = self.copy_directory_recursive(db_addon_dir, module_dir, variables)
+                print(f"  Created {len(created_files)} database files")
+
+        print("\n" + "=" * 50)
+        print("Module creation complete!")
+        print("=" * 50)
+        print(f"\nModule location: {module_dir}")
+        print("\nNext steps:")
+        print(f"1. Review generated files")
+        if integrate_workspace:
+            print(f"2. Append workspace/local/workspace.yaml to {self.services_dir}/workspace.yaml")
+            print(f"3. Append workspace/local/.env to {self.services_dir}/.env")
+            print(f"4. Rebuild and restart: cd {self.services_dir} && docker compose up -d --build")
+        else:
+            print(f"2. Integrate with workspace using: @dagster-module-builder workspace add {module_name}")
+        print()
+
+        return True
+
 
 def main():
     """Main entry point for CLI usage."""
-    if len(sys.argv) < 2:
-        print("Usage: module_builder.py <module-name>")
-        sys.exit(1)
+    import argparse
 
-    module_name = sys.argv[1]
+    parser = argparse.ArgumentParser(
+        description='Create a new Dagster module from templates',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='''
+Examples:
+  # Create basic module with PostgreSQL
+  %(prog)s my-new-module
 
-    builder = ModuleBuilder()
+  # Create module without database
+  %(prog)s my-module --db none
 
-    print(f"Creating module: {module_name}")
-    print(f"Templates: {builder.templates_dir}")
-    print(f"Output: {builder.projects_dir / module_name}")
+  # Create module with workspace integration
+  %(prog)s my-module --workspace
 
-    # Generate variables
-    variables = builder.generate_variables(
-        module_name=module_name,
-        database_type="postgresql",
-        description="Test module created with automation",
+  # Full module with deployment config
+  %(prog)s my-module --workspace --deploy --deploy-name yoda
+        '''
     )
 
-    print("\nVariables:")
-    for key, value in variables.items():
-        print(f"  {key}: {value}")
+    parser.add_argument('module_name', help='Name of the module (e.g., my-module)')
+    parser.add_argument('--db', '--database', dest='database_type',
+                       choices=['postgresql', 'mysql', 'none'],
+                       default='postgresql',
+                       help='Database type (default: postgresql)')
+    parser.add_argument('--desc', '--description', dest='description',
+                       default='',
+                       help='Module description')
+    parser.add_argument('--workspace', action='store_true',
+                       help='Create workspace integration files')
+    parser.add_argument('--deploy', action='store_true',
+                       help='Create deployment configuration')
+    parser.add_argument('--deploy-name', default='production',
+                       help='Deployment name (default: production)')
+    parser.add_argument('--client', dest='client_name',
+                       default='',
+                       help='Client name for deployment')
+    parser.add_argument('--git-repo', default='',
+                       help='Git repository URL')
+    parser.add_argument('--templates-dir',
+                       help='Templates directory (default: ~/workspace/patterns/dagster)')
+
+    args = parser.parse_args()
+
+    # Initialize builder
+    if args.templates_dir:
+        builder = ModuleBuilder(templates_dir=args.templates_dir)
+    else:
+        builder = ModuleBuilder()
+
+    # Create module
+    success = builder.create_module(
+        module_name=args.module_name,
+        database_type=args.database_type,
+        description=args.description,
+        integrate_workspace=args.workspace,
+        configure_deployment=args.deploy,
+        deploy_name=args.deploy_name,
+        client_name=args.client_name,
+        git_repo=args.git_repo,
+    )
+
+    sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":

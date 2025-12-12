@@ -338,8 +338,8 @@ dagster dev -f src/data_processor_dagster/__init__.py
 **Skill:**
 - `~/workspace/skills/dagster-module-builder/`
 
-**Templates:**
-- `~/workspace/patterns/dagster/`
+**Templates (separate dependency):**
+- `~/workspace/patterns/dagster/` - Required, must be set up separately
 
 **Modules:**
 - `~/workspace/projects/<module-name>/`
