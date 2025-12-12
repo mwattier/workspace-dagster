@@ -1,5 +1,5 @@
 """
-Custom IO Manager for Beast HubSpot module.
+Custom IO Manager for Dagster assets.
 
 This IO manager stores asset outputs in a mounted directory (/tmp/dagster_storage/)
 to ensure persistence across Docker container executions.
@@ -17,9 +17,9 @@ from typing import Any
 from dagster import ConfigurableIOManager, InputContext, OutputContext, io_manager
 
 
-class BeastHubspotIOManager(ConfigurableIOManager):
+class CustomIOManager(ConfigurableIOManager):
     """
-    Custom IO Manager for Beast HubSpot assets.
+    Custom IO Manager for persisting Dagster assets.
 
     Stores asset outputs as pickle files in /tmp/dagster_storage/ which is
     mounted to the host for persistence across container executions.
@@ -35,7 +35,7 @@ class BeastHubspotIOManager(ConfigurableIOManager):
 
     def _get_path(self, context) -> str:
         """Generate file path for an asset."""
-        # Get the asset key path (e.g., ["beast_hubspot", "my_asset"])
+        # Get the asset key path (e.g., ["module_name", "my_asset"])
         asset_key_path = context.asset_key.path
         asset_name = asset_key_path[-1]  # Just the asset name
 
@@ -123,7 +123,7 @@ class BeastHubspotIOManager(ConfigurableIOManager):
 
 
 @io_manager
-def beast_hubspot_io_manager() -> BeastHubspotIOManager:
-    """IO Manager factory for Beast HubSpot assets."""
+def custom_io_manager() -> CustomIOManager:
+    """IO Manager factory for persisting assets across container restarts."""
     storage_path = os.environ.get('DAGSTER_STORAGE_PATH', '/tmp/dagster_storage')
-    return BeastHubspotIOManager(base_path=storage_path)
+    return CustomIOManager(base_path=storage_path)
